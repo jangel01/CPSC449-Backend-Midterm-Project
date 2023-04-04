@@ -8,6 +8,7 @@ app = Flask(__name__)
 # CORS(app)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
+app.config["DEBUG"] = True
 
 app.secret_key = 'happykey'
 
@@ -17,10 +18,14 @@ app.secret_key = 'happykey'
 # app.config['MYSQL_PASSWORD'] = '1234'
 # app.config['MYSQL_DB'] = 'test'
 # To connect MySQL database
+
+#password = "1234567890"	#professor DB pw
+#password = My20SQL21		#Daniel pw
+
 conn = pymysql.connect(
         host='localhost',
         user='root', 
-        password = "1234567890",
+        password = "My20SQL21",
         db='449_db',
 		cursorclass=pymysql.cursors.DictCursor
         )
