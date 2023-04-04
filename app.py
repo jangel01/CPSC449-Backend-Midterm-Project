@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, abort
 import pymysql
 from flask_cors import CORS
 import re
@@ -138,6 +138,59 @@ def update():
 			msg = 'Please fill out the form !'
 		return render_template("update.html", msg = msg)
 	return redirect(url_for('login'))
+
+@app.route('/user')
+def user():
+	if 'username' in session:
+		name = session['username']
+		return '<h1>welcome '+ name +'</h1>'
+	else:
+		return render_template('login.html', msg = "need to log in first!") 
+
+@app.route('/admin')
+def admin():
+	if 'username' in session:
+		name = session['username']
+		if name == "admin":
+			return render_template('admin.html') 
+			#return '<h1>This is a special page for '+ name +'</h1>'
+		else:
+			#return '<h1>Current user do not have enough permission to access this page.</h1>'
+			abort(401)
+	else:
+		return render_template('login.html', msg = "need to log in first!") 
+
+@app.errorhandler(400)
+def bad_request(e):
+	return '<h1>400 - Bad Request</h1>'
+
+@app.errorhandler(401)
+def no_permission(e):
+	return '<h1>401 - Unauthorized</h1>'
+
+@app.errorhandler(403)
+def no_permission(e):
+	return '<h1>403 - Forbidden</h1>'
+
+@app.errorhandler(404)
+def page_not_found(e):
+	return '<h1>404 - Page Not Found</h1>'
+
+@app.errorhandler(500)
+def unexpected_error(e):
+	return '<h1>500 - Server encountered an unexpected error</h1>'
+
+@app.errorhandler(501)
+def not_implemented(e):
+	return '<h1>501 - Server does not recognize the request method</h1>'
+
+@app.errorhandler(502)
+def bad_gateway(e):
+	return '<h1>502 - Bad Gateway</h1>'
+
+@app.errorhandler(505)
+def http_not_supported(e):
+	return '<h1>505 - Server does not support the HTTP version used in the request</h1>'
 
 if __name__ == "__main__":
 	app.run(host ="localhost", port = int("5000"))
