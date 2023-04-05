@@ -12,8 +12,8 @@ Python version used: 3.7
 
 Database information:
         host='localhost',
-        user='root', 
-        password = "My20SQL21",
+        user='root',                            #this need to be changed for each local MySQL instance
+        password = "My20SQL21",                 #this need to be changed for each local MySQL instance
         db='449_db',
         
 Database structure:
