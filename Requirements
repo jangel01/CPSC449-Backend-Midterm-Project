@@ -1,0 +1,9 @@
+Libraries needed to run this code:
+
+Flask
+Flask_cors
+Flask-MySQLdb (maybe we are not using this one
+Jinja2
+PyJWT
+PyMySQL
+Werkzeug
