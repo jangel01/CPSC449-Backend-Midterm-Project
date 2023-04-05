@@ -4,7 +4,7 @@ from flask_cors import CORS
 import re
 #needed for JWT
 import jwt
-#needed for uploading files
+#needed for uploading files?
 import os
 from werkzeug.utils import secure_filename
 
