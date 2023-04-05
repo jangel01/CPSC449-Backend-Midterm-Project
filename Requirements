@@ -9,3 +9,13 @@ PyMySQL
 Werkzeug
 
 Python version used: 3.7
+
+Database information:
+        host='localhost',
+        user='root', 
+        password = "My20SQL21",
+        db='449_db',
+        
+Database structure:
+        based on the myproject.zip downloaded from class
+        
