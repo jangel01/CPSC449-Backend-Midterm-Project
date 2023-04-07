@@ -28,7 +28,7 @@ app.secret_key = 'happykey'
 conn = pymysql.connect(
         host='localhost',
         user='root', 
-        password = "My20SQL21",
+        password = "Sql1121990",
         db='449_db',
 		cursorclass=pymysql.cursors.DictCursor
         )
@@ -236,8 +236,13 @@ def allowed_image_filesize(filesize):
 	else:
 		print("false")
 		return False
-		
 
+# task 5 - public route
+@app.route("/public-info", methods =['GET'])
+def public_info():
+	cur.execute('SELECT username, country FROM accounts')
+	accounts = cur.fetchall()
+	return render_template("public-info.html", accounts = accounts)
 
 if __name__ == "__main__":
 	app.run(host ="localhost", port = int("5000"))
