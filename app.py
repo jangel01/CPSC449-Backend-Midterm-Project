@@ -289,7 +289,7 @@ def loginpwt():
 	if auth and auth.password == '1234':
 		#token will expire after 30 seconds for test purpose
 		#this is also the payload information
-		token = jwt.encode({'user' : auth.username, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(seconds = 15)}, app.config['SECRET_KEY'], algorithm='HS256')
+		token = jwt.encode({'user' : auth.username, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes = 1)}, app.config['SECRET_KEY'], algorithm='HS256')
 		#print('encoded token:')
 		#print(token)
 		return jsonify ({'token' : token})
