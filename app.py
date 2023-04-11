@@ -207,7 +207,7 @@ def http_not_supported(e):
 #task4 - uploading files
 #original source https://www.youtube.com/watch?v=6WruncSoCdI
 #app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024			#this name is a global which overwrite my error handling.
-app.config['MAX_IMAGE_FILESIZE'] = 1024 * 1024
+app.config['MAX_IMAGE_FILESIZE'] = 1024 * 102
 #app.config['UPLOAD_EXTENSIONS'] = ['.jpg', '.png', '.gif']
 #app.config['UPLOAD_PATH'] = 'uploads'
 app.config['IMAGE_UPLOADS'] = '/Users/danielwu/Projects/449/midterm/449-project/upload'
