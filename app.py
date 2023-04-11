@@ -1,19 +1,29 @@
-from flask import Flask, render_template, request, redirect, url_for, session, abort
+from flask import Flask, render_template, request, redirect, url_for, session, abort, jsonify
 import pymysql
+from flask_sqlalchemy import SQLAlchemy
+import uuid #For public id
 from flask_cors import CORS
 import re
-
-#needed for uploading files
-import os
-from werkzeug.utils import secure_filename
-
 #needed for JWT
 import jwt
-from flask import jsonify, make_response
-#to make sure the token expire after a while
-import datetime
 from functools import wraps
+#needed for uploading files?
+import os
+from werkzeug.utils import secure_filename
+from hashlib import pbkdf2_hmac
 
+def generate_salt():
+	salt = os.urandom(16)
+	return salt.hex()
+
+def generate_hash(plain_password, password_salt):
+	password_hash = pbkdf2_hmac(
+		"sha256",
+		b"%b" % bytes(plain_password, "utf-8"),
+		b"%b" % bytes(password_salt, "utf-8"),
+		10000,
+	)
+	return password_hash.hex()
 
 app = Flask(__name__)
 # CORS(app)
@@ -31,12 +41,18 @@ app.secret_key = 'happykey'
 
 #password = "1234567890"	#professor DB pw
 #password = My20SQL21		#Daniel pw
-#password = "Sql1121990",
+
+def generate_jwt_token(content):
+	encoded_content = jwt.encode(content, app.secret_key, algorithm="HS256")
+	token = str(encoded_content).split(" ")[0]
+	return token
+
+
 
 conn = pymysql.connect(
         host='localhost',
         user='root', 
-        password = "My20SQL21",
+        password = "",
         db='449_db',
 		cursorclass=pymysql.cursors.DictCursor
         )
@@ -49,7 +65,7 @@ def login():
 	if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
 		username = request.form['username']
 		password = request.form['password']
-		cur.execute('SELECT * FROM accounts WHERE username = % s AND password = % s', (username, password, ))
+		cur.execute('SELECT * FROM accounts WHERE username = % s AND password = % s', (username, password))
 		conn.commit()
 		account = cur.fetchone()
 		if account:
@@ -57,8 +73,23 @@ def login():
 			session['loggedin'] = True
 			session['id'] = account['id']
 			session['username'] = account['username']
-			msg = 'Logged in successfully !'
+			session['password_hash'] = account['password_hash']
+			session['password_salt'] = account['password_salt']
+			session['admin'] = account['admin']
+			session['jwt_token'] = None
+			password_hash = generate_hash(password, session['password_salt'])				
+
+			#if account  hashes match a token will be generated and saved to the session until a new person logs in
+			if password_hash == account['password_hash']:
+				user_id = session['id']
+				user_admin = session['admin']
+				user_name = session['username']
+				jwt_token = generate_jwt_token({"id": user_id,"user_name": user_name, "admin": user_admin})
+				session['jwt_token'] = jwt_token
+			
+			msg = 'Logged in successfully !'	
 			return render_template('index.html', msg = msg)
+
 		else:
 			msg = 'Incorrect username / password !'
 	return render_template('login.html', msg = msg)
@@ -77,6 +108,8 @@ def register():
 		print('reached')
 		username = request.form['username']
 		password = request.form['password']
+		password_salt = generate_salt()
+		password_hash = generate_hash(password, password_salt)
 		email = request.form['email']
 		organisation = request.form['organisation']
 		address = request.form['address']
@@ -95,7 +128,7 @@ def register():
 		elif not re.match(r'[A-Za-z0-9]+', username):
 			msg = 'name must contain only characters and numbers !'
 		else:
-			cur.execute('INSERT INTO accounts VALUES (NULL, % s, % s, % s, % s, % s, % s, % s, % s, % s)', (username, password, email, organisation, address, city, state, country, postalcode, ))
+			cur.execute('INSERT INTO accounts VALUES (NULL, % s, % s, % s, % s, % s, % s, % s, % s, % s, % s, % s, 0)', (username, password, email, organisation, address, city, state, country, postalcode, password_salt, password_hash ))
 			conn.commit()
 
 			msg = 'You have successfully registered !'
@@ -118,6 +151,30 @@ def display():
 		account = cur.fetchone()
 		return render_template("display.html", account = account)
 	return redirect(url_for('login'))
+
+#task 3 by Douglas
+#only accessable by 'admins' who are marked as such in the database
+#anyone who tries to access this who isnt an admin with a token will be booted into the login page
+@app.route("/protected")
+def protected():
+	if 'loggedin' in session:
+		jwt_token = session.get('jwt_token')
+		if jwt_token == None:
+			return redirect(url_for('login'))
+		try:
+			payload = jwt.decode(jwt_token, app.config['SECRET_KEY'], algorithms=['HS256'])
+		except (jwt.InvalidTokenError, KeyError):
+			return render_template('error.html', error_message = no_permission(403)),
+		if payload['admin'] == 1:
+			return render_template('test.html')
+		else:
+			return render_template('error.html', error_message = ("Invalid Token", no_permission(403)))
+
+		
+		
+		
+		
+
 
 @app.route("/update", methods =['GET', 'POST'])
 def update():
@@ -207,7 +264,7 @@ def http_not_supported(e):
 #task4 - uploading files
 #original source https://www.youtube.com/watch?v=6WruncSoCdI
 #app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024			#this name is a global which overwrite my error handling.
-app.config['MAX_IMAGE_FILESIZE'] = 1024 * 102
+app.config['MAX_IMAGE_FILESIZE'] = 1024 * 1024
 #app.config['UPLOAD_EXTENSIONS'] = ['.jpg', '.png', '.gif']
 #app.config['UPLOAD_PATH'] = 'uploads'
 app.config['IMAGE_UPLOADS'] = '/Users/danielwu/Projects/449/midterm/449-project/upload'
@@ -244,66 +301,19 @@ def allowed_image_filesize(filesize):
 	else:
 		print("false")
 		return False
-
+	
 # task 5 - public route
 @app.route("/public-info", methods =['GET'])
 def public_info():
 	cur.execute('SELECT username, country FROM accounts')
 	accounts = cur.fetchall()
 	return render_template("public-info.html", accounts = accounts)
-	
-#task3
-#using this website as a reference: https://www.youtube.com/watch?v=J5bIPtEbS0Q
-#secret key generated by running pyhton in terminal
-#then running the following commands at pyhton terminal:
-#imports secrets
-#secrets.token_hex(16)
-app.config['SECRET_KEY']='d192b2b5ea9181024fc95913e27a20c5'
-#app.config['SECRET_KEY']='thisisthesecretkey'
-
-def token_required(f):
-	@wraps(f)
-	def decorated(*args, **kwargs):
-		token = request.args.get('token') #http://localhost:5000/route?token=token_generated_at_loginpwt
-		#print(token)
-		if not token:
-			return jsonify({'message' : 'Token is missing'}), 403
-
-		try:
-			#print('trying to decode token:')
-			#print(token)
-			data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
-			#data = token
-		except:
-			return jsonify({'message' : 'Token is invalid'}), 403
-
-		return f(*args, **kwargs)
-	return decorated
 
 @app.route('/unprotected')
 def unprotected():
 	return jsonify({'message' : 'Anyone can view this!', 'not_secret_ingredient' : 'ketchup'})
 
-@app.route('/protected')
-@token_required
-def protected():
-	return jsonify({'message':'This is only available for people with valid tokens.', 'secret_ingredient' : 'MSG'})
-
-@app.route('/loginpwt')
-def loginpwt():
-	auth = request.authorization
-	
-	#accept any username, but password must be 123
-	if auth and auth.password == '1234':
-		#token will expire after 30 seconds for test purpose
-		#this is also the payload information
-		token = jwt.encode({'user' : auth.username, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes = 1)}, app.config['SECRET_KEY'], algorithm='HS256')
-		#print('encoded token:')
-		#print(token)
-		return jsonify ({'token' : token})
-		#return jsonify ({'token' : token.decode('UTF-8')})
-
-	return make_response('Cannot verify!', 401, {'WWW-authenticate' : 'Basic realm="Login Required"'})
+		
 
 
 if __name__ == "__main__":
