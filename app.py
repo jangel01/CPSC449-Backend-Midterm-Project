@@ -302,12 +302,13 @@ def allowed_image_filesize(filesize):
 		print("false")
 		return False
 	
-# task 5 - public route
+# task 5 - public route, no auth
 @app.route("/public-info", methods =['GET'])
 def public_info():
 	cur.execute('SELECT username, country FROM accounts')
 	accounts = cur.fetchall()
-	return render_template("public-info.html", accounts = accounts)
+	return jsonify(accounts), 200
+	#return render_template("public-info.html", accounts = accounts)
 
 @app.route('/unprotected')
 def unprotected():
