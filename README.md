@@ -15,7 +15,7 @@ b. Once created open it and click schemas on the left. Then right click in the b
   
 c. Once the schema is created take note of its name and the password you used to log into the connection
   
-d. Next click on administration (next to schema from , then data import/restore.
+d. Next click on administration (next to schema from step a, then data import/restore.
   
 e. Click import from self-contained file, and then the 3 dots on the right. Open the sql file from this repository.
   
