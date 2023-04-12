@@ -11,15 +11,11 @@ Group Members: Daniel Chen Wu, Jason Angel, Douglas Villalobos
 # How to import a database
 a. To import the database, open mysql and create a new connection
   
-b. Once created open it and click schemas on the left. Then right click in the box labled schemas then click create schema
+b. Next click on administration in the left side panel, then data import/restore.
   
-c. Once the schema is created take note of its name and the password you used to log into the connection
+c. Click import from self-contained file, and then the 3 dots on the right. Open the sql file from this repository, then click start import
   
-d. Next click on administration (next to schema from step a, then data import/restore.
-  
-e. Click import from self-contained file, and then the 3 dots on the right. Open the sql file from this repository.
-  
-f. Under default target schema pick the database you just made, then click start import
-  
-g. Relog into the connection and your database should have a new table with data that will be used for token authorization
+d. Relog into the connection and there will be a new schema and table with data that will be used for token authorization.
+
+e. Use the name of that schema and the password you used to make the connection to fill the info in app.py
 
