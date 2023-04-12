@@ -53,7 +53,7 @@ conn = pymysql.connect(
         host='localhost',
         user='root', 
         password = "",
-        db='449_db',
+        db='group2_449_database',
 		cursorclass=pymysql.cursors.DictCursor
         )
 cur = conn.cursor()
