@@ -2,9 +2,9 @@
 Group Members: Daniel Chen Wu, Jason Angel, Douglas Villalobos
 
 # How to use
-1. CLone/pull latest version of repositiory on your computer
-2. Create a virtual environment and install the requirements using requirements.txt . Make your have have MySQL server and mysql_config in your PATH, otherwise you will encounter an error with mysql_config when using pip
-3. Import the given 449_db database in MySQL or any other equiavlent method
+1. Clone/pull latest version of repository to your computer
+2. Create a virtual environment and install the requirements using requirements.txt . Make your have have MySQL server and mysql_config in your PATH, otherwise you will encounter an error with mysql_config when using pip install
+3. Import the given 449_db database to your mysql server
 4. Edit app.py to have the password to your mysql server
 5. Once set up, you can run the app.py from the virtual environment and test using postman
 
