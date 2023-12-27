@@ -1,5 +1,5 @@
 CPSC 449 - Web Back End Engineering
-# Group Mmembers
+# Group Members
 Daniel Chen Wu, Jason Angel, Douglas Villalobos
 
 # How to use
