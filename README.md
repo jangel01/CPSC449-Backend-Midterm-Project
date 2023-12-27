@@ -1,5 +1,6 @@
-# 449-project
-Group Members: Daniel Chen Wu, Jason Angel, Douglas Villalobos
+CPSC 449 - Web Back End Engineering
+# Group Mmembers
+Daniel Chen Wu, Jason Angel, Douglas Villalobos
 
 # How to use
 1. Clone/pull latest version of repository to your computer
